@@ -44,11 +44,11 @@ pip install -r requirements.txt
 
 ## Input files
 
-Exemplary input files are included in the [dat](dat/) directory.
+Example input files are included in the [dat](dat/) directory.
 
 SparsePro takes in the following files: 
 
-1. **summmary statistics file** that contains SNP('CHR.POS.A1.A2', must match the IDs used in LD file(s)), BETA(effect size estimate from GWAS), SE(standard deviation of effect size from GWAS).
+1. **summmary statistics file** that contains SNP ('CHR.POS.A1.A2'; must match the IDs used in LD file(s)), BETA (effect size estimate from GWAS), SE (standard deviation of effect size from GWAS).
 
 ```
 $> head -5 22.ss
@@ -60,7 +60,7 @@ SNP	BETA	SE
 22.19500832.T.C	0.0161714	0.0101509 
 ```
 
-2. **LD file(s)** that contains SNP-SNP correlations. The indices should match with the summary statistics file.   
+2. **LD file(s)** that contains SNP-SNP correlations. The indices should match the summary statistics file.   
 
 ```
 $> head -5 chr22_19500001_21000001.ld | cut -f 1-5
@@ -94,15 +94,15 @@ SNP	Conserved_LindbladToh	DHS_Trynka	H3K27ac_Hnisz	H3K4me3_Trynka
 
 ### SparsePro-: statistical fine-mapping with summary statistics
 
-We use [sparsepro.py](src/) to perform statistical fine-mapping. We can provide the aforementioned summary statistic file, LD file and LD list file through --ss, --LDdir and --LDlst respectively. 
+We use [sparsepro.py](src/) to perform statistical fine-mapping. We can provide the aforementioned summary statistic file, LD file, and LD list file through --ss, --LDdir, and --LDlst, respectively. 
 
 To help setting hyperparameters, GWAS sample size `N` and trait variance `var_Y` should also be provided.
 
-Also, we can use --save to specify path to save results and --prefix to specify prefix for result files.
+Also, we can use --save to specify the path to save results and --prefix to specify the prefix for result files.
 
-If you intend to perform annotated fine-mapping, please set --tmp to be true to save intermediate files to save computation time.
+If you intend to perform annotated fine-mapping, please set --tmp to be true, to store intermediate files to save computation time.
 
-We suggest separate the whole genome into chromosomal chunks to perform parallel statistical fine-mapping. 
+We suggest separating the whole genome into chromosomal chunks to perform parallel statistical fine-mapping. 
 
 ```python
 python src/sparsepro.py \
