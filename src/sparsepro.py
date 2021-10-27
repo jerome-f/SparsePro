@@ -12,7 +12,7 @@ def title():
     print('**********************************************************************')
     print('* SparsePro for efficient genome-wide fine-mapping                   *')
     print('* Version 1.0.0                                                      *')
-    print('* (C) Wenmin Zhang (wenmin.zhang@mail.mcgill.ca                      *')
+    print('* (C) Wenmin Zhang (wenmin.zhang@mail.mcgill.ca)                     *')
     print('**********************************************************************')
     print()
 
@@ -161,7 +161,7 @@ for i in range(len(ldlists)):
     XX, XtX, ytX = get_XX_XtX_ytX(LD.values,beta,se,args.var_Y)
     h2_hess=get_HESS_h2_SS(XtX,XX,LD.values,beta,se,args.N,args.var_Y)
     
-    print("{} variants loaded from {} with {} variants have matched summary statistics explains {:2.2%} of trait heritability \n".format(LD.shape[1], ld, len(idx), h2_hess))
+    print("{} variants loaded from {} with {} variants having matched summary statistics explaining {:2.2%} of trait heritability \n".format(LD.shape[1], ld, len(idx), h2_hess))
     model = SparsePro(len(beta),args.K,XX,args.var_Y,h2_hess) 
     model.train(XX, ytX, XtX, LD.values,verbose=args.verbose)
     

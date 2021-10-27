@@ -147,7 +147,7 @@ for i in range(len(ldlists)):
     h2_hess,model,elbo = pickle.load(open_file)
     open_file.close()
     
-    print("{} variants loaded from {} with {} variants have matched summary statistics explains {:2.2%} of trait heritability \n".format(LD.shape[1], ld, len(idx), h2_hess))
+    print("{} variants loaded from {} with {} variants having matched summary statistics explaining {:2.2%} of trait heritability \n".format(LD.shape[1], ld, len(idx), h2_hess))
     
     ianno = anno.loc[idx]
     ANN = ianno.values[:,sigidx]
