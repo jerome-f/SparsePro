@@ -68,9 +68,9 @@ Wsep = {}
 
 for k in anno.columns:
     P = len(anno[k])
-    A = sum(anno[k])
-    K = sum(allPIP.values)
-    M = sum(allPIP.loc[anno[k]==1].values)
+    A = (anno[k]).sum()
+    K = allPIP.values.sum()
+    M = allPIP.loc[anno[k]==1].values.sum()
     
     obs = np.array([[K-M,P-A-K+M],[M,A-M]])
     g, p, dof, expctd = chi2_contingency(obs, lambda_="log-likelihood")
