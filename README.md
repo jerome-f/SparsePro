@@ -21,6 +21,7 @@ Full description is available at our [preprint paper](https://www.biorxiv.org/co
 ## Overview 
 
 <img align="right" src="doc/Fig1.png" width=60% height=60%>
+Identifying causal variants from genome-wide association studies (GWASs) is challenging due to widespread linkage disequilibrium (LD). Functional annotations of the genome may help prioritize variants that are biologically relevant and thus improve fine-mapping of GWAS results.
 To fine-map causal SNPs, our method takes two lines of evidence. First, from estimated marginal associations between genetic variants and a complex trait of interest, accompanied by matched LD information, we can group correlated genetic variants together and assess their effects jointly. Then we infer the contribution of each SNP towards each group of causal effect separately to obtain posterior inclusion probabilities (PIPs). Second, optionally, if we have knowledge about any functional annotations which may be enriched for the causal SNPs, we can estimate the relative enrichment of these annotations, and prioritize SNPs with these annotations so that they are more likely to be considered causal variants. As outputs, our model yields functionally informed PIP for each SNP and the enrichment estimates of candidate functional annotations.
 
 ## Installation
