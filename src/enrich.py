@@ -13,7 +13,7 @@ def title():
     print('**********************************************************************')
     print('* SparsePro for testing functional enrichment of annotations         *')
     print('* Version 1.0.0                                                      *')
-    print('* ©Wenmin Zhang (wenmin.zhang@mail.mcgill.ca)                        *')
+    print('* (C)Wenmin Zhang (wenmin.zhang@mail.mcgill.ca)                        *')
     print('**********************************************************************')
     print()
 

@@ -20,9 +20,16 @@ Full description is available at our [preprint paper](https://www.biorxiv.org/co
 
 ## Overview 
 
-![](doc/Fig1.png "SparsePro overview")
+<img align="right" src="doc/Fig1.png" width=60% height=60%>
+To fine-map causal SNPs, our method takes two lines of evidence. First, from estimated marginal associations between genetic variants and a complex trait of interest, accompanied by matched LD information, we can group correlated genetic variants together and assess their effects jointly. Then we infer the contribution of each SNP towards each group of causal effect separately to obtain posterior inclusion probabilities (PIPs). Second, optionally, if we have knowledge about any functional annotations which may be enriched for the causal SNPs, we can estimate the relative enrichment of these annotations, and prioritize SNPs with these annotations so that they are more likely to be considered causal variants. As outputs, our model yields functionally informed PIP for each SNP and the enrichment estimates of candidate functional annotations.
 
 ## Installation
+
+`git clone https://github.com/zhwm/Sparse_Pro.git`
+
+
+
+## Input files
 
 ## Usage
 
@@ -67,6 +74,17 @@ python src/sparsepro_plus.py \
     --anno dat/22.anno \
     --W dat/res/22.W0.5 
 ```
+## Output files
+
+## FAQ
+
+1. How to obtain trait variance for --var_Y from summary statistics?
+
+   - If the trait has been standardized to have unit variance prior to perfrom GWAS (for example, inverse normal transformed), we can set it as 1.0. Otherwise, it can be estimated from `var_Y = 2Np(1-p)se^2`  where `N` (the sample size), `p` (minor allele frequencies), and `se` (standard errors of effect size estimates) are usually available in GWAS summary statistics.
+
+2. How to set hyperparameter K?
+
+   - We have shown that SparsePro is not sensitive to the setting of K as long as K is larger than the actual number of effects, except that increasing K marginally increases the computation time. A practical guide would be making sure the number of identified effect is always smaller than K.   
 
 ## License
 
