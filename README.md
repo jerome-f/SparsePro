@@ -25,9 +25,19 @@ To fine-map causal SNPs, our method takes two lines of evidence. First, from est
 
 ## Installation
 
-`git clone https://github.com/zhwm/Sparse_Pro.git`
+SparsePro is tested under Python 3.9.7 and requires the following Python packages:
 
+* [numpy](http://www.numpy.org/) (version==1.21.3)
+* [scipy](http://www.scipy.org/) (version==1.7.1)
+* [pandas](https://pandas.pydata.org/getpandas.html) (version==1.3.4)
 
+To install SparsePro:
+
+```
+git clone https://github.com/zhwm/Sparse_Pro.git
+cd Sparse_Pro
+pip install -r requirements.txt 
+``` 
 
 ## Input files
 
