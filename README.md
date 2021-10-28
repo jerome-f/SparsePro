@@ -37,8 +37,8 @@ SparsePro was developed under Python 3.9.7 environment but should be compatible 
 To install SparsePro:
 
 ```
-git clone https://github.com/zhwm/Sparse_Pro.git
-cd Sparse_Pro
+git clone https://github.com/zhwm/SparsePro.git
+cd SparsePro
 pip install -r requirements.txt 
 ``` 
 
