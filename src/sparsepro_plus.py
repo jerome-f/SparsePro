@@ -99,7 +99,7 @@ class SparsePro(object):
                 break
             loss = elbo
 
-parser = argparse.ArgumentParser(description='SparsePro')
+parser = argparse.ArgumentParser(description='SparsePro+ Commands:')
 parser.add_argument('--ss', type=str, default=None, help='path to summary stats', required=True)
 parser.add_argument('--var_Y', type=float, default=None, help='GWAS trait variance', required=True)
 parser.add_argument('--N', type=int, default=None, help='GWAS sample size', required=True)
@@ -157,15 +157,14 @@ for i in range(len(ldlists)):
     model.train(XX, ytX, XtX, LD.values,verbose=args.verbose,loss=elbo)
     
     mcs = model.get_effect_dict()
-    # print(otk)
-    print('Causal variants for each effect:')
-    print({j:[idx[i] for i in mcs[j]] for j in mcs})
-    print('Posterior inclusion probabilities for each effect:')
     eff_gamma, eff_mu = model.get_effect_num_dict()
-    print(eff_gamma)
-    print('Variational effect sizes for each effect:')
-    print(eff_mu)
-    print()
+
+    print("Altogether {} effect(s) detected.".format(len(mcs)))
+    for i in mcs:
+        print('In the {}-th effect:'.format(i))
+        print('causal variants: {}'.format([idx[j] for j in mcs[i]]))
+        print('posterior inclusion probabilities: {}'.format(eff_gamma[i]))    
+        print()
     
     apip_vec = model.get_PIP().round(4)
     
@@ -179,4 +178,4 @@ for i in range(len(ldlists)):
                 apip[idx[i]] = apip_vec[i]
     
 pd.Series(apip).to_csv(os.path.join(args.save,"{}.apip".format(args.prefix)),sep='\t',header=None)
-print("Annotated fine-mapping finished at {}".format(time.strftime("%Y-%m-%d %H:%M")))
+print("Annotated fine-mapping finished at {}. Writing all PIPs to {}.apip ...".format(time.strftime("%Y-%m-%d %H:%M"),args.prefix))

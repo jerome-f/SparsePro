@@ -37,14 +37,14 @@ def get_sig_enrich(A,all_PIP):
             W_se_new = np.sqrt(1/(r*tot)+1/((1-r)*tot)-1/(kr*A.shape[0])-1/((1-kr)*A.shape[0]))
             W_se[i] = W_se_new
         eps = ((W - W_old)**2).sum()
-        print("iteration {} with diff {}".format(ite,eps))
+        #print("iteration {} with diff {}".format(ite,eps))
         if eps < 1e-2:
-            print("converged")
+            #print("converged")
             break
             
     return W,W_se
 
-parser = argparse.ArgumentParser(description='SparsePro')
+parser = argparse.ArgumentParser(description='SparsePro Enrich Commands:')
 parser.add_argument('--save', type=str, default=None, help='path to save result', required=True)
 parser.add_argument('--prefix', type=str, default=None, help='prefix for result files', required=True)
 parser.add_argument('--anno', type=str, default=None, help='path to annotation file',required=True)
@@ -83,7 +83,7 @@ df_Wsep.index = ['W','se','p']
 df_Wsep.index.name = 'Wsep'
 df_Wsep = df_Wsep.transpose()
 
-print("Univariate testing finished at {}. Saving result to wsep file...".format(time.strftime("%Y-%m-%d %H:%M")))
+print("Univariate testing finished at {}. Saving result to {}.wsep file...".format(time.strftime("%Y-%m-%d %H:%M"),args.prefix))
 print()
 
 df_Wsep.to_csv(os.path.join(args.save,'{}.wsep'.format(args.prefix)),sep="\t")
@@ -93,12 +93,12 @@ sigidx = [i for i in range(anno.shape[1]) if df_Wsep.p[i]<args.pthres]
 if len(sigidx)==0:
     sys.exit("None of the {} annotations is significantly enriched at p-value threshold {}. Existing...".format(anno.shape[1], args.pthres))
 else:
-    print("{} annotations are deemed significantly enriched at {} p-value threshold and used to update priors. Saving result to W{} file...".format(len(sigidx),args.pthres, args.pthres))
+    print("{} annotations are deemed significantly enriched at {} p-value threshold and used to update priors. Saving result to {}.W{} file...".format(len(sigidx),args.pthres,args.prefix,args.pthres))
 
 sigANNOT = anno.values[:,sigidx]
 
 W_sig,W_se_sig = get_sig_enrich(sigANNOT, allPIP.values)
 
 df_W_sig = pd.DataFrame({'ANNO':anno.columns[sigidx],'W_sig':W_sig, 'W_se_sig':W_se_sig, 'sigidx':sigidx})
-print(df_W_sig)
+#print(df_W_sig)
 df_W_sig.to_csv(os.path.join(args.save,'{}.W{}'.format(args.prefix,args.pthres)),sep='\t',index=False)

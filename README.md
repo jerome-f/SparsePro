@@ -1,6 +1,6 @@
 # SparsePro for efficient genome-wide fine-mapping with summary statistics and functional annotations
 
-We have developed SparsePro to efficiently conduct functionally informed fine-mapping. Our method has two key features: First, by creating a sparse low-dimensional projection of the high-dimensional genotype, we enable a linear search of causal variants instead of an exponential search of causal configurations in most existing methods; Second, we adopt a probabilistic framework with a highly efficient variational expectation-maximization algorithm to integrate statistical associations and functional priors.
+SparsePro is a command line tool for efficiently conducting genome-wide fine-mapping. Our method has two key features: First, by creating a sparse low-dimensional projection of the high-dimensional genotype, we enable a linear search of causal variants instead of an exponential search of causal configurations in most existing methods; Second, we adopt a probabilistic framework with a highly efficient variational expectation-maximization algorithm to integrate statistical associations and functional priors.
 
 Full description is available in our [preprint paper](https://www.biorxiv.org/content/10.1101/2021.10.04.463133v1). 
 
@@ -42,6 +42,67 @@ cd Sparse_Pro
 pip install -r requirements.txt 
 ``` 
 
+To test the installation and display basic usage:
+
+```
+$> python src/sparsepro.py -h
+usage: sparsepro.py [-h] --ss SS --var_Y VAR_Y --N N --LDdir LDDIR --LDlst LDLST --save SAVE --prefix PREFIX
+                    [--verbose VERBOSE] [--tmp TMP] --K K
+
+SparsePro- Commands:
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --ss SS            path to summary stats
+  --var_Y VAR_Y      GWAS trait variance
+  --N N              GWAS sample size
+  --LDdir LDDIR      path to LD files
+  --LDlst LDLST      path to LD list
+  --save SAVE        path to save result
+  --prefix PREFIX    prefix for result files
+  --verbose VERBOSE  options for displaying more information
+  --tmp TMP          options for saving intermediate file
+  --K K              largest number of effect
+```
+
+
+```
+$> python src/enrich.py -h   
+usage: enrich.py [-h] --save SAVE --prefix PREFIX --anno ANNO --pip PIP --pthres PTHRES
+
+SparsePro Enrich Commands:
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --save SAVE      path to save result
+  --prefix PREFIX  prefix for result files
+  --anno ANNO      path to annotation file
+  --pip PIP        path to pip file
+  --pthres PTHRES  p value threshold for enrichment
+```
+
+```
+$> python src/sparsepro_plus.py -h
+usage: sparsepro_plus.py [-h] --ss SS --var_Y VAR_Y --N N --LDdir LDDIR --LDlst LDLST --save SAVE --prefix
+                         PREFIX [--verbose VERBOSE] --K K [--anno ANNO] --W W
+
+SparsePro+ Commands:
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --ss SS            path to summary stats
+  --var_Y VAR_Y      GWAS trait variance
+  --N N              GWAS sample size
+  --LDdir LDDIR      path to LD files
+  --LDlst LDLST      path to LD list
+  --save SAVE        path to save result
+  --prefix PREFIX    prefix for result files
+  --verbose VERBOSE  options for displaying more information
+  --K K              largest number of effect
+  --anno ANNO        path to annotation file
+  --W W              path to enriched file
+```
+
 ## Input files
 
 Example input files are included in the [dat](dat/) directory.
@@ -51,7 +112,7 @@ SparsePro takes in the following files:
 1. **summmary statistics file** that contains SNP ('CHR.POS.A1.A2'; must match the IDs used in LD file(s)), BETA (effect size estimate from GWAS), SE (standard deviation of effect size from GWAS).
 
 ```
-$> head -5 22.ss
+$> head -5 dat/22.ss
 
 SNP	BETA	SE
 22.19500559.G.A	0.00562955	0.0322818
@@ -63,7 +124,7 @@ SNP	BETA	SE
 2. **LD file(s)** that contains SNP-SNP correlations. The indices should match the summary statistics file.   
 
 ```
-$> head -5 chr22_19500001_21000001.ld | cut -f 1-5
+$> head -5 dat/chr22_19500001_21000001.ld | cut -f 1-5
 SNP	22.19500559.G.A	22.19500581.C.A	22.19500657.C.G	22.19500832.T.C
 22.19500559.G.A	1.0	-0.0169	-0.063	-0.0102
 22.19500581.C.A	-0.0169	1.0	-0.2274	-0.0317
@@ -74,7 +135,7 @@ SNP	22.19500559.G.A	22.19500581.C.A	22.19500657.C.G	22.19500832.T.C
 3. **list of LD file(s)** contains a list of LD file(s). These LD files should cover all SNPs in the summary statistics file.
 
 ```
-$> cat 22.lst 
+$> cat dat/22.lst 
 chr22_19500001_21000001.ld.gz
 chr22_20000001_21500001.ld.gz
 chr22_20500001_22000001.ld.gz
@@ -82,7 +143,7 @@ chr22_20500001_22000001.ld.gz
 4. (optional) **annotation file** with binary entries indicating whether SNPs have the corresponding annotations. 
 
 ```
-$> head -5 22.anno | cut -f 1-5
+$> head -5 dat/22.anno | cut -f 1-5
 SNP	Conserved_LindbladToh	DHS_Trynka	H3K27ac_Hnisz	H3K4me3_Trynka
 22.19500559.G.A	0	0	1	0
 22.19500581.C.A	0	0	1	0
@@ -92,15 +153,17 @@ SNP	Conserved_LindbladToh	DHS_Trynka	H3K27ac_Hnisz	H3K4me3_Trynka
 
 ## Usage
 
+Here we use a part of FEV1/FVC ratio GWAS summary statistics calculated using UK Biobank European ancestry participants to showcase genome-wide fine-mapping procedures with SparsePro. All files are included in the [dat](dat/) directory.
+
 ### SparsePro-: statistical fine-mapping with summary statistics
 
-We use [sparsepro.py](src/) to perform statistical fine-mapping. We can provide the aforementioned summary statistic file, LD file, and LD list file through --ss, --LDdir, and --LDlst, respectively. 
+We use [sparsepro.py](src/) to perform statistical fine-mapping. We can provide the summary statistic file, LD file, and LD list file through --ss, --LDdir, and --LDlst, respectively. 
 
-To help setting hyperparameters, GWAS sample size `N` and trait variance `var_Y` should also be provided.
+To help setting hyperparameters, GWAS sample size `N` is set as 283677 and trait variance `var_Y` is provided as 1.0 since we performed inverse normal transformation before GWAS. We also set the largest number of effect `K` to be 9.
 
-Also, we can use --save to specify the path to save results and --prefix to specify the prefix for result files.
+Also, we use --save to specify the path for saving results and --prefix 22 to specify the prefix for result files.
 
-If you intend to perform annotated fine-mapping, please set --tmp to be true, to store intermediate files to save computation time.
+If you intend to perform annotated fine-mapping, please set `--tmp True`, to store intermediate files (with suffix .obj) to save computation time.
 
 We suggest separating the whole genome into chromosomal chunks to perform parallel statistical fine-mapping. 
 
@@ -108,13 +171,67 @@ We suggest separating the whole genome into chromosomal chunks to perform parall
 python src/sparsepro.py \
     --ss dat/22.ss \
     --var_Y 1.0 \
-    --N 283677 \ 
+    --N 283677 \
     --LDdir dat/LD \
     --LDlst dat/22.lst \
     --save dat/res \
     --prefix 22 \
     --tmp True \
-    --K 9 
+    --K 9
+```
+
+Here is the expected output:
+
+```
+summary statistics loaded at 2021-10-28 15:59
+LD list with 3 LD blocks loaded
+
+6134 variants loaded from chr22_19500001_21000001.ld.gz with 6134 variants having matched summary statistics explaining 0.21% of trait heritability 
+
+Altogether 5 effect(s) detected.
+In the 0-th effect:
+causal variants: ['22.20778066.A.G', '22.20776406.A.G']
+posterior inclusion probabilities: [0.5054, 0.102]
+
+In the 1-th effect:
+causal variants: ['22.19753449.A.G', '22.19754091.A.C', '22.19753848.A.G']
+posterior inclusion probabilities: [0.4296, 0.1427, 0.1144]
+
+In the 2-th effect:
+causal variants: ['22.20780296.G.A']
+posterior inclusion probabilities: [0.9883]
+
+In the 3-th effect:
+causal variants: ['22.19803382.C.A']
+posterior inclusion probabilities: [0.2201]
+
+In the 4-th effect:
+causal variants: ['22.19508232.A.G']
+posterior inclusion probabilities: [0.1423]
+
+5804 variants loaded from chr22_20000001_21500001.ld.gz with 5804 variants having matched summary statistics explaining 0.18% of trait heritability 
+
+Altogether 2 effect(s) detected.
+In the 0-th effect:
+causal variants: ['22.20778066.A.G', '22.20776406.A.G']
+posterior inclusion probabilities: [0.5044, 0.1012]
+
+In the 1-th effect:
+causal variants: ['22.20780296.G.A']
+posterior inclusion probabilities: [0.9923]
+
+4561 variants loaded from chr22_20500001_22000001.ld.gz with 4561 variants having matched summary statistics explaining 0.16% of trait heritability 
+
+Altogether 2 effect(s) detected.
+In the 0-th effect:
+causal variants: ['22.20778066.A.G', '22.20776406.A.G']
+posterior inclusion probabilities: [0.5108, 0.1005]
+
+In the 1-th effect:
+causal variants: ['22.20780296.G.A']
+posterior inclusion probabilities: [0.9956]
+
+Statistical fine-mapping finished at 2021-10-28 16:00. Writing all PIPs to 22.pip ...
 ```
 
 ### Enrich: testing function enrichment of annotations
@@ -134,6 +251,17 @@ python src/enrich.py \
     --pthres 0.5
 ```
 
+Here is the expected output:
+
+```
+Annotation file Loaded at 2021-10-28 16:01
+There are 9230 variants with 10 annotations and among them 9230 variants have PIP esitmates
+
+Univariate testing finished at 2021-10-28 16:01. Saving result to 22.wsep file...
+
+4 annotations are deemed significantly enriched at 0.5 p-value threshold and used to update priors. Saving result to 22.W0.5 file...
+```
+
 ### SparsePro+: annotated fine-mapping with summary statistics and functional annotations 
 
 We use [sparsepro_plus.py](src/) to perform annotated fine-mapping. Given the relative enrichment estimates, we can update the prior probability of being causal for each variants with their annotations.
@@ -143,16 +271,61 @@ Please use the same `K`, `N` and `var_Y` for both statistical fine-mapping and a
 ```python
 python src/sparsepro_plus.py \
     --ss dat/22.ss \
-    --var_Y 1.0 \ 
+    --var_Y 1.0 \
     --N 283677 \
     --LDdir dat/LD \
     --LDlst dat/22.lst \
     --save dat/res \
-    --prefix 22 \ 
+    --prefix 22 \
     --K 9 \
     --anno dat/22.anno \
     --W dat/res/22.W0.5 
 ```
+
+Here is the expected output:
+
+```
+summary statistics loaded at 2021-10-28 16:02
+Annotation file Loaded at 2021-10-28 16:02
+There are 9230 variants with 10 annotations and among them 9230 variants have summary statistics
+
+LD list with 3 LD blocks loaded
+
+6134 variants loaded from chr22_19500001_21000001.ld.gz with 6134 variants having matched summary statistics explaining 0.21% of trait heritability 
+
+Altogether 5 effect(s) detected.
+In the 0-th effect:
+causal variants: ['22.20785639.G.A', '22.20778066.A.G']
+posterior inclusion probabilities: [0.8021, 0.1339]
+
+In the 1-th effect:
+causal variants: ['22.19754091.A.C', '22.19753449.A.G']
+posterior inclusion probabilities: [0.7088, 0.1476]
+
+In the 2-th effect:
+causal variants: ['22.20780296.G.A']
+posterior inclusion probabilities: [0.9997]
+
+In the 3-th effect:
+causal variants: ['22.19798836.C.G', '22.19803382.C.A']
+posterior inclusion probabilities: [0.1246, 0.11]
+
+In the 4-th effect:
+causal variants: ['22.20101289.C.T']
+posterior inclusion probabilities: [0.2285]
+
+5804 variants loaded from chr22_20000001_21500001.ld.gz with 5804 variants having matched summary statistics explaining 0.18% of trait heritability 
+
+Altogether 2 effect(s) detected.
+In the 0-th effect:
+causal variants: ['22.20785639.G.A', '22.20778066.A.G']
+posterior inclusion probabilities: [0.806, 0.1242]
+```
+
+So far, we have finished fine-mapping our subset of the FEV1/FFR GWAS summary statistics. Due to the small number of variants investigated, we do not find any evidence of functional enrichment. We can visualize the statistical fine-mapping PIPs and compare with the p-values obtained in GWAS.
+
+<img src='doc/showcase.png'>
+
 ## Output files
 
 If no functional annotation is provided, we have the following output file saved to the path specified by --save:
@@ -203,11 +376,13 @@ H3K4me3_Trynka	0.619519677762428	0.8362184062338268	3
 non_synonymous	2.640968734588369	1.0019843330387552	8
 ```
 
+
+
 ## FAQ
 
 1. How do we obtain trait variance for --var_Y from summary statistics?
 
-   - If the trait has been standardized to have unit variance prior to performing GWAS (for example, inverse normal transformed), we can set it as 1.0. Otherwise, it can be estimated from `var_Y = 2Np(1-p)se^2`  where `N` (the sample size), `p` (minor allele frequencies), and `se` (standard errors of effect size estimates) are usually available in GWAS summary statistics.
+   - If the trait has been standardized to have unit variance prior to performing GWAS (for example, inverse normal transformed), we can set it as 1.0. Otherwise, it can be estimated from `var_Y = 2Np(1-p)se^2`  where `N` (the sample size), `p` (minor allele frequencies), and `se` (standard errors of effect size estimates) are usually available in GWAS summary statistics. If the `var_Y` estimates vary across variants, we supply the median value of all these estimates.
 
 2. How do we set hyperparameter K?
 
