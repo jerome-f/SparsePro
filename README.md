@@ -13,6 +13,7 @@ Full description is available in our [preprint paper](https://www.biorxiv.org/co
   * [SparsePro-: statistical fine-mapping with summary statistics](#sparsepro---statistical-fine-mapping-with-summary-statistics)
   * [Enrich: testing function enrichment of annotations](#enrich--testing-function-enrichment-of-annotations)
   * [SparsePro+: annotated fine-mapping with summary statistics and functional annotations](#sparsepro---annotated-fine-mapping-with-summary-statistics-and-functional-annotations)
+  * [Genome-wide fine-mapping with pre-computed UK Biobank LD matrix](#genome-wide-fine-mapping-with-pre-computed-uk-biobank-ld-matrix)
 - [Output files](#output-files)
 - [FAQ](#faq)
 - [License](#license)
@@ -46,23 +47,23 @@ To test the installation and display basic usage:
 
 ```
 $> python src/sparsepro.py -h
-usage: sparsepro.py [-h] --ss SS --var_Y VAR_Y --N N --LDdir LDDIR --LDlst LDLST --save SAVE --prefix PREFIX
-                    [--verbose VERBOSE] [--tmp TMP] --K K
+usage: sparsepro.py [-h] --ss SS --var_Y VAR_Y --N N --K K --LDdir LDDIR --LDlst LDLST --save SAVE --prefix PREFIX [--verbose] [--tmp] [--ukb]
 
 SparsePro- Commands:
 
 optional arguments:
-  -h, --help         show this help message and exit
-  --ss SS            path to summary stats
-  --var_Y VAR_Y      GWAS trait variance
-  --N N              GWAS sample size
-  --LDdir LDDIR      path to LD files
-  --LDlst LDLST      path to LD list
-  --save SAVE        path to save result
-  --prefix PREFIX    prefix for result files
-  --verbose VERBOSE  options for displaying more information
-  --tmp TMP          options for saving intermediate file
-  --K K              largest number of effect
+  -h, --help       show this help message and exit
+  --ss SS          path to summary stats
+  --var_Y VAR_Y    GWAS trait variance
+  --N N            GWAS sample size
+  --K K            largest number of effect
+  --LDdir LDDIR    path to LD files
+  --LDlst LDLST    path to LD list
+  --save SAVE      path to save result
+  --prefix PREFIX  prefix for result files
+  --verbose        options for displaying more information
+  --tmp            options for saving intermediate file
+  --ukb            options for using precomputed UK Biobank ld files from PolyFun
 ```
 
 
@@ -83,24 +84,25 @@ optional arguments:
 
 ```
 $> python src/sparsepro_plus.py -h
-usage: sparsepro_plus.py [-h] --ss SS --var_Y VAR_Y --N N --LDdir LDDIR --LDlst LDLST --save SAVE --prefix
-                         PREFIX [--verbose VERBOSE] --K K [--anno ANNO] --W W
+usage: sparsepro_plus.py [-h] --ss SS --var_Y VAR_Y --N N --K K --LDdir LDDIR --LDlst LDLST --save SAVE --prefix PREFIX [--anno ANNO] --W W [--verbose]
+                         [--ukb]
 
 SparsePro+ Commands:
 
 optional arguments:
-  -h, --help         show this help message and exit
-  --ss SS            path to summary stats
-  --var_Y VAR_Y      GWAS trait variance
-  --N N              GWAS sample size
-  --LDdir LDDIR      path to LD files
-  --LDlst LDLST      path to LD list
-  --save SAVE        path to save result
-  --prefix PREFIX    prefix for result files
-  --verbose VERBOSE  options for displaying more information
-  --K K              largest number of effect
-  --anno ANNO        path to annotation file
-  --W W              path to enriched file
+  -h, --help       show this help message and exit
+  --ss SS          path to summary stats
+  --var_Y VAR_Y    GWAS trait variance
+  --N N            GWAS sample size
+  --K K            largest number of effect
+  --LDdir LDDIR    path to LD files
+  --LDlst LDLST    path to LD list
+  --save SAVE      path to save result
+  --prefix PREFIX  prefix for result files
+  --anno ANNO      path to annotation file
+  --W W            path to enriched file
+  --verbose        options for displaying more information
+  --ukb            options for using precomputed UK Biobank ld files from PolyFun
 ```
 
 ## Input files
@@ -132,13 +134,14 @@ SNP	22.19500559.G.A	22.19500581.C.A	22.19500657.C.G	22.19500832.T.C
 22.19500832.T.C	-0.0102	-0.0317	-0.1293	1.0
 ```
 
-3. **list of LD file(s)** contains a list of LD file(s). These LD files should cover all SNPs in the summary statistics file.
+3. **list of LD file(s)** contains a list of LD file(s). The SNPs in these LD files should match SNPs in the summary statistics file. The start and end columns indicate the range in each LD matrix being used.
 
 ```
 $> cat dat/22.lst 
-chr22_19500001_21000001.ld.gz
-chr22_20000001_21500001.ld.gz
-chr22_20500001_22000001.ld.gz
+ld	start	end
+chr22_19500001_21000001.ld.gz	19500001	20500001
+chr22_20000001_21500001.ld.gz	20500001	21000001
+chr22_20500001_22000001.ld.gz	21000001	22000001
 ```
 4. (optional) **annotation file** with binary entries indicating whether SNPs have the corresponding annotations. 
 
@@ -157,13 +160,13 @@ Here we use a part of FEV1/FVC ratio GWAS summary statistics calculated using UK
 
 ### SparsePro-: statistical fine-mapping with summary statistics
 
-We use [sparsepro.py](src/) to perform statistical fine-mapping. We can provide the summary statistic file, LD file, and LD list file through --ss, --LDdir, and --LDlst, respectively. 
+We use [sparsepro.py](src/) to perform statistical fine-mapping. We can provide the summary statistic file, LD files directory, and LD list file through `--ss`, `--LDdir`, and `--LDlst`, respectively. 
 
-To help setting hyperparameters, GWAS sample size `N` is set as 283677 and trait variance `var_Y` is provided as 1.0 since we performed inverse normal transformation before GWAS. We also set the largest number of effect `K` to be 9.
+To help setting hyperparameters, GWAS sample size `--N` is set as 283677 and trait variance `--var_Y` is provided as 1.0 since we performed inverse normal transformation before GWAS. We also set the largest number of effect `--K` to be 9.
 
-Also, we use --save to specify the path for saving results and --prefix 22 to specify the prefix for result files.
+Also, we use `--save` to specify the path for saving results and `--prefix` 22 to specify the prefix for result files.
 
-If you intend to perform annotated fine-mapping, please set `--tmp True`, to store intermediate files (with suffix .obj) to save computation time.
+If you intend to perform annotated fine-mapping, please use `--tmp`, to store intermediate files (with suffix .obj) to save computation time.
 
 We suggest separating the whole genome into chromosomal chunks to perform parallel statistical fine-mapping. 
 
@@ -176,71 +179,61 @@ python src/sparsepro.py \
     --LDlst dat/22.lst \
     --save dat/res \
     --prefix 22 \
-    --tmp True \
+    --tmp \
     --K 9
 ```
 
 Here is the expected output:
 
 ```
-summary statistics loaded at 2021-10-28 15:59
+summary statistics loaded at 2021-11-25 12:38
 LD list with 3 LD blocks loaded
 
 6134 variants loaded from chr22_19500001_21000001.ld.gz with 6134 variants having matched summary statistics explaining 0.21% of trait heritability 
 
-Altogether 5 effect(s) detected.
-In the 0-th effect:
-causal variants: ['22.20778066.A.G', '22.20776406.A.G']
-posterior inclusion probabilities: [0.5054, 0.102]
+4669 variants in the range of 19500001 to 20500001
+Detected k = 4
 
-In the 1-th effect:
-causal variants: ['22.19753449.A.G', '22.19754091.A.C', '22.19753848.A.G']
-posterior inclusion probabilities: [0.4296, 0.1427, 0.1144]
+The 1-th effect contains effective variants:
+causal variants: ['22.19753449.A.G', '22.19754091.A.C', '22.19753848.A.G', '22.19750773.T.C']
+posterior inclusion probabilities: [0.417, 0.1456, 0.1172, 0.1008]
+posterior causal effect size: [0.0176, 0.0167, 0.0166, 0.0165]
 
-In the 2-th effect:
-causal variants: ['22.20780296.G.A']
-posterior inclusion probabilities: [0.9883]
-
-In the 3-th effect:
+The 3-th effect contains effective variants:
 causal variants: ['22.19803382.C.A']
-posterior inclusion probabilities: [0.2201]
-
-In the 4-th effect:
-causal variants: ['22.19508232.A.G']
-posterior inclusion probabilities: [0.1423]
+posterior inclusion probabilities: [0.218]
+posterior causal effect size: [-0.0148]
 
 5804 variants loaded from chr22_20000001_21500001.ld.gz with 5804 variants having matched summary statistics explaining 0.18% of trait heritability 
 
-Altogether 2 effect(s) detected.
-In the 0-th effect:
-causal variants: ['22.20778066.A.G', '22.20776406.A.G']
-posterior inclusion probabilities: [0.5044, 0.1012]
+1465 variants in the range of 20500001 to 21000001
+Detected k = 2
 
-In the 1-th effect:
+The 0-th effect contains effective variants:
+causal variants: ['22.20778066.A.G', '22.20776406.A.G']
+posterior inclusion probabilities: [0.472, 0.1045]
+posterior causal effect size: [-0.0354, -0.0349]
+
+The 1-th effect contains effective variants:
 causal variants: ['22.20780296.G.A']
-posterior inclusion probabilities: [0.9923]
+posterior inclusion probabilities: [0.9462]
+posterior causal effect size: [0.0314]
 
 4561 variants loaded from chr22_20500001_22000001.ld.gz with 4561 variants having matched summary statistics explaining 0.16% of trait heritability 
 
-Altogether 2 effect(s) detected.
-In the 0-th effect:
-causal variants: ['22.20778066.A.G', '22.20776406.A.G']
-posterior inclusion probabilities: [0.5108, 0.1005]
+3096 variants in the range of 21000001 to 22000001
+Detected k = 2
 
-In the 1-th effect:
-causal variants: ['22.20780296.G.A']
-posterior inclusion probabilities: [0.9956]
-
-Statistical fine-mapping finished at 2021-10-28 16:00. Writing all PIPs to 22.pip ...
+Statistical fine-mapping finished at 2021-11-25 12:39. Writing all PIPs to 22.pip; all credible sets to 22.cs; all top snps in each effect to 22.tl ...
 ```
 
 ### Enrich: testing function enrichment of annotations
 
 After obtaining PIPs from statistical fine-mapping, we can test for functional enrichment of annotations with [enrich.py](src/).
 
-We use --anno to provide the annotation file and --pip to provide statistical fine-mapping PIPs. To increase statistical power of functional annotations, we suggest aggregating whole genome SNPs to perform the testing. 
+We use `--anno` to provide the annotation file and `--pip` to provide statistical fine-mapping PIPs. To increase statistical power of functional annotations, we suggest aggregating whole-genome SNPs to perform the testing. 
 
-We use the p-value cutoff supplied to --pthres to select significantly enriched annotations for updating priors in annotated fine-mapping. Here we use 0.5 only to showcase the utility. We recommend setting the threshold to **1e-6** if genome-wide SNPs were included.
+We use the p-value cutoff supplied to `--pthres` to select significantly enriched annotations for updating priors in annotated fine-mapping. Here we use 0.3 only to showcase the utility. We recommend setting the threshold to **1e-6** if genome-wide SNPs were included.
 
 ```python
 python src/enrich.py \
@@ -248,25 +241,25 @@ python src/enrich.py \
     --prefix 22 \
     --anno dat/22.anno \
     --pip dat/res/22.pip \
-    --pthres 0.5
+    --pthres 0.3
 ```
 
 Here is the expected output:
 
 ```
-Annotation file Loaded at 2021-10-28 16:01
+Annotation file Loaded at 2021-11-25 12:45
 There are 9230 variants with 10 annotations and among them 9230 variants have PIP esitmates
 
-Univariate testing finished at 2021-10-28 16:01. Saving result to 22.wsep file...
+Univariate testing finished at 2021-11-25 12:45. Saving result to 22.wsep file...
 
-4 annotations are deemed significantly enriched at 0.5 p-value threshold and used to update priors. Saving result to 22.W0.5 file...
+4 annotations are deemed significantly enriched at 0.3 p-value threshold and used to update priors. Saving result to 22.W0.3 file...
 ```
 
 ### SparsePro+: annotated fine-mapping with summary statistics and functional annotations 
 
 We use [sparsepro_plus.py](src/) to perform annotated fine-mapping. Given the relative enrichment estimates, we can update the prior probability of being causal for each variants with their annotations.
 
-Please use the same `K`, `N` and `var_Y` for both statistical fine-mapping and annotated fine-mapping. 
+Please use the same `--K`, `--N` and `--var_Y` for both statistical fine-mapping and annotated fine-mapping. 
 
 ```python
 python src/sparsepro_plus.py \
@@ -279,66 +272,112 @@ python src/sparsepro_plus.py \
     --prefix 22 \
     --K 9 \
     --anno dat/22.anno \
-    --W dat/res/22.W0.5 
+    --W dat/res/22.W0.3 
 ```
 
 Here is the expected output:
 
 ```
-summary statistics loaded at 2021-10-28 16:02
-Annotation file Loaded at 2021-10-28 16:02
+summary statistics loaded at 2021-11-25 12:46
+Annotation file Loaded at 2021-11-25 12:46
 There are 9230 variants with 10 annotations and among them 9230 variants have summary statistics
 
 LD list with 3 LD blocks loaded
 
 6134 variants loaded from chr22_19500001_21000001.ld.gz with 6134 variants having matched summary statistics explaining 0.21% of trait heritability 
 
-Altogether 5 effect(s) detected.
-In the 0-th effect:
-causal variants: ['22.20785639.G.A', '22.20778066.A.G']
-posterior inclusion probabilities: [0.8021, 0.1339]
+4669 variants in the range of 19500001 to 20500001
+Detected k = 4
 
-In the 1-th effect:
-causal variants: ['22.19754091.A.C', '22.19753449.A.G']
-posterior inclusion probabilities: [0.7088, 0.1476]
+The 1-th effect contains effective variants:
+causal variants: ['22.19754091.A.C']
+posterior inclusion probabilities: [0.7886]
+posterior causal effect size: [0.0166]
 
-In the 2-th effect:
-causal variants: ['22.20780296.G.A']
-posterior inclusion probabilities: [0.9997]
-
-In the 3-th effect:
-causal variants: ['22.19798836.C.G', '22.19803382.C.A']
-posterior inclusion probabilities: [0.1246, 0.11]
-
-In the 4-th effect:
-causal variants: ['22.20101289.C.T']
-posterior inclusion probabilities: [0.2285]
+The 3-th effect contains effective variants:
+causal variants: ['22.19803382.C.A', '22.19798836.C.G']
+posterior inclusion probabilities: [0.1356, 0.1037]
+posterior causal effect size: [-0.0147, -0.0136]
 
 5804 variants loaded from chr22_20000001_21500001.ld.gz with 5804 variants having matched summary statistics explaining 0.18% of trait heritability 
 
-Altogether 2 effect(s) detected.
-In the 0-th effect:
+1465 variants in the range of 20500001 to 21000001
+Detected k = 2
+
+The 0-th effect contains effective variants:
 causal variants: ['22.20785639.G.A', '22.20778066.A.G']
-posterior inclusion probabilities: [0.806, 0.1242]
+posterior inclusion probabilities: [0.7394, 0.1459]
+posterior causal effect size: [0.035, -0.0356]
+
+The 1-th effect contains effective variants:
+causal variants: ['22.20780296.G.A']
+posterior inclusion probabilities: [0.9971]
+posterior causal effect size: [0.0308]
+
+4561 variants loaded from chr22_20500001_22000001.ld.gz with 4561 variants having matched summary statistics explaining 0.16% of trait heritability 
+
+3096 variants in the range of 21000001 to 22000001
+Detected k = 2
+
+Annotated fine-mapping finished at 2021-11-25 12:47. Writing all PIPs to 22.apip; all credible sets to 22.acs; all top snps in each effect to 22.atl ...
 ```
 
-So far, we have finished fine-mapping our subset of the FEV1/FFR GWAS summary statistics. Due to the small number of variants investigated, we do not find any evidence of functional enrichment. We can visualize the statistical fine-mapping PIPs and compare with the p-values obtained in GWAS.
+So far, we have finished fine-mapping our subset of the FEV1/FVC ratio GWAS summary statistics. Due to the small number of variants investigated, we do not find any evidence of functional enrichment. We can visualize the statistical fine-mapping PIPs and compare with the p-values obtained in GWAS.
 
 <img src='doc/showcase.png'>
 
+
+### Genome-wide fine-mapping with pre-computed UK Biobank LD matrix
+
+Since the computation of LD can take quite some time, we also provide an option `--ukb` to use pre-computed UK Biobank whole-genome LD matrix provided in [PolyFun](https://www.nature.com/articles/s41588-020-00735-5). They can be downloaded from [here](https://alkesgroup.broadinstitute.org/UKBB_LD/).
+
+In order to match the summary statistics with these LD matrix, please make sure the SNP index are matched with those provided in [idx](ukb/idx/) directory. This can be achieved by flipping the sign of BETA in the summary statistics to match with the index. Using the `--ukb` flag with the directory of the downloaded LD file provided by `--LDdir`, we can perform SparsePro-, Enrich and SparsePro+ as described before. Here are some examples:
+
+```
+python src/sparsepro.py --ukb --ss FFR_22.ss --var_Y 1.0 --N 283677 --K 9 --LDdir ~/UKBBLD/ --LDlst ukb/lst/22.lst --save res --prefix FFR_22 --tmp
+```
+
+```
+python src/enrich.py --save res --prefix FFR_22 --anno ukb/anno/UKBB.22.anno --pip res/FFR_22.pip --pthres 1e-3
+```
+
+```
+python src/sparsepro_plus.py --ukb --ss FFR_22.ss --var_Y 1.0 --N 283677 --K 9 --LDdir ~/UKBBLD/ --LDlst ukb/lst/22.lst --save res --prefix FFR_22 --anno ukb/anno/UKBB.22.anno --W res/FFR_22.W1e-3
+```
+
 ## Output files
 
-If no functional annotation is provided, we have the following output file saved to the path specified by --save:
+If no functional annotation is provided, we have the following output files saved to the path specified by --save:
 
 1. statistical fine-mapping PIPs
 
 ```
 $> head -5 22.pip
-22.19500559.G.A	0.0
-22.19500581.C.A	0.0
-22.19500657.C.G	0.0
-22.19500832.T.C	0.0
-22.19500918.T.C	0.0
+22.19500559.G.A	0.0002
+22.19500581.C.A	0.0001
+22.19500657.C.G	0.0001
+22.19500832.T.C	0.0002
+22.19500918.T.C	0.0002
+```
+
+2. statistical fine-mapping effects (credible sets): each row represents an effect; the cs column contains the SNPs included in the effect; the pip column contains the SNPs with PIP greater than 0.1 in the effect; and the beta column contains effect sizes of these SNPs if selected to be causal in this effect. 
+
+```
+$> cat 22.cs
+cs	pip	beta
+['22.19753449.A.G', '22.19754091.A.C', '22.19753848.A.G', '22.19750773.T.C']	[0.417, 0.1456, 0.1172, 0.1008]	[0.0176, 0.0167, 0.0166, 0.0165]
+['22.19803382.C.A']	[0.218]	[-0.0148]
+['22.20778066.A.G', '22.20776406.A.G']	[0.472, 0.1045]	[-0.0354, -0.0349]
+['22.20780296.G.A']	[0.9462]	[0.0314]
+```
+
+3. statistical fine-mapping top list: a list of the most representative SNP in each effect
+```
+$> cat 22.tl
+22.19753449.A.G
+22.19803382.C.A
+22.20778066.A.G
+22.20780296.G.A
 ```
 
 Given functional annotations, we have the following additional output files saved to the path specified by --save:
@@ -347,33 +386,53 @@ Given functional annotations, we have the following additional output files save
 
 ```
 $> head -5 22.apip
-22.19500559.G.A 0.0
-22.19500581.C.A 0.0
-22.19500657.C.G 0.0
-22.19500832.T.C 0.0
-22.19500918.T.C 0.0
+22.19500559.G.A	0.0001
+22.19500581.C.A	0.0
+22.19500657.C.G	0.0
+22.19500832.T.C	0.0001
+22.19500918.T.C	0.0001
 ```
 
-2. univariate test results of functional enrichment for annotations. The first column is the relative enrichment estimates; the second column is standard deviations of relative enrichment estimates and the third column is the p-value of annotation enrichment.
+2. statistical fine-mapping effects (credible sets)
+
+```
+$> cat 22.acs
+cs	pip	beta
+['22.19754091.A.C']	[0.7886]	[0.0166]
+['22.19803382.C.A', '22.19798836.C.G']	[0.1356, 0.1037]	[-0.0147, -0.0136]
+['22.20785639.G.A', '22.20778066.A.G']	[0.7394, 0.1459]	[0.035, -0.0356]
+['22.20780296.G.A']	[0.9971]	[0.0308]
+```
+
+3. statistical fine-mapping top list
+```
+$> cat 22.atl
+22.19754091.A.C
+22.19803382.C.A
+22.20785639.G.A
+22.20780296.G.A
+```
+
+4. univariate test results of functional enrichment for annotations. The first column is the relative enrichment estimates; the second column is standard deviations of relative enrichment estimates; and the third column is the p-value of annotation enrichment.
 
 ```
 $> head -5 22.wsep
 	W	se	p
-Conserved_LindbladToh	2.209	0.9482	0.2054
-DHS_Trynka	1.1631	0.8289	0.3641
-H3K27ac_Hnisz	1.0237	1.1261	0.5961
-H3K4me3_Trynka	1.1811	0.8362	0.319
+Conserved_LindbladToh	2.2125	0.9555	0.2115
+DHS_Trynka	1.2337	0.8341	0.3256
+H3K27ac_Hnisz	1.1693	1.195	0.5363
+H3K4me3_Trynka	1.2785	0.8507	0.2731
 ```
 
-3. joint relative enrichment estimation of significantly enriched annotations (at the p-value cutoff supplied to --pthres). The first column contains significantly enriched annotations; the second and the third columns contain joint estimates of relative enrichement and their standard deviations. The fourth column contains the column index of these annotations in the original annotation file (0-based).
+5. joint relative enrichment estimation of significantly enriched annotations (at the p-value cutoff supplied to --pthres). The first column contains significantly enriched annotations; the second and the third columns contain joint estimates of relative enrichement and their standard deviations. The fourth column contains the column index of these annotations in the original annotation file (0-based).
 
 ```
->$ head 22.W0.5 
+>$ head 22.W0.3 
 ANNO	W_sig	W_se_sig	sigidx
-Conserved_LindbladToh	0.9702117252665534	0.9492466421964948	0
-DHS_Trynka	0.9431559764601944	0.8289476027010576	1
-H3K4me3_Trynka	0.619519677762428	0.8362184062338268	3
-non_synonymous	2.640968734588369	1.0019843330387552	8
+Conserved_LindbladToh	1.1045804382746935	0.9564783649206201	0
+H3K4me3_Trynka	1.0370385745188193	0.8507116428093798	3
+non_synonymous	2.2952201065704325	1.0265360522406743	8
+Human_Promoter_Villar_ExAC	-1.2941718438595082	7.100477456141411	9
 ```
 
 

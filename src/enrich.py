@@ -12,7 +12,7 @@ np.set_printoptions(precision=4, linewidth=200)
 def title():
     print('**********************************************************************')
     print('* SparsePro for testing functional enrichment of annotations         *')
-    print('* Version 1.0.0                                                      *')
+    print('* Version 1.0.1                                                      *')
     print('* (C) Wenmin Zhang (wenmin.zhang@mail.mcgill.ca)                     *')
     print('**********************************************************************')
     print()
@@ -63,6 +63,8 @@ print("Annotation file Loaded at {}".format(time.strftime("%Y-%m-%d %H:%M")))
 paidx = anno.index.intersection(allPIP.index)
 print("There are {} variants with {} annotations and among them {} variants have PIP esitmates".format(anno.shape[0],anno.shape[1],len(paidx)))
 print()
+allPIP = allPIP.loc[paidx]
+anno = anno.loc[paidx]
 
 Wsep = {}
 
